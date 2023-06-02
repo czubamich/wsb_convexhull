@@ -21,43 +21,64 @@
           EditMode="DataGridEditMode.Inline"
           Editable
           ShowPager
+          PagerPosition="DataGridPagerPosition.Bottom"
+          PagerOptions="new(){ ButtonSize=Size.Small }"
           Responsive>
-        <DataGridCommandColumn Width="15%">
-            <NewCommandTemplate>
-                <Button Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
-            </NewCommandTemplate>
-            <EditCommandTemplate>
-                <Button Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-            </EditCommandTemplate>
-            <DeleteCommandTemplate>
-                <Button Color="Color.Danger" Clicked="@context.Clicked">@context.LocalizationString</Button>
-            </DeleteCommandTemplate>
-            <SaveCommandTemplate>
-                <Button Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
-            </SaveCommandTemplate>
-            <CancelCommandTemplate>
-                <Button Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
-            </CancelCommandTemplate>
-        </DataGridCommandColumn>
-        <DataGridColumn Field="@nameof(Point.X)" Caption="X" Editable />
-        <DataGridColumn Field="@nameof(Point.Y)" Caption="Y" Editable />
+        <DataGridColumns>
+            <DataGridCommandColumn Width="10%">
+                <NewCommandTemplate>
+                    <Button Color="Color.Success" Clicked="@context.Clicked"><Icon Name="IconName.Add" /></Button>
+                </NewCommandTemplate>
+                <EditCommandTemplate>
+                    <Button Color="Color.Primary" Clicked="@context.Clicked"><Icon Name="IconName.Edit" /></Button>
+                </EditCommandTemplate>
+                <DeleteCommandTemplate>
+                    <Button Color="Color.Danger" Clicked="@context.Clicked"><Icon Name="IconName.Delete" /></Button>
+                </DeleteCommandTemplate>
+                <SaveCommandTemplate>
+                    <Button Color="Color.Success" Clicked="@context.Clicked"><Icon Name="IconName.Save" /></Button>
+                </SaveCommandTemplate>
+                <CancelCommandTemplate>
+                    <Button Color="Color.Secondary" Clicked="@context.Clicked"><Icon Name="IconName.Undo" /></Button>
+                </CancelCommandTemplate>
+            </DataGridCommandColumn>
+            <DataGridColumn Field="@nameof(Point.X)" Caption="X" Editable />
+            <DataGridColumn Field="@nameof(Point.Y)" Caption="Y" Editable />
+        </DataGridColumns>
+        
+        <PageButtonTemplate>
+            <Span TextColor="TextColor.Success">
+                @context.PageNumber
+            </Span>
+        </PageButtonTemplate>
+        <NextPageButtonTemplate><Icon Name="IconName.StepForward" /></NextPageButtonTemplate>
+        <PreviousPageButtonTemplate><Icon Name="IconName.StepBackward" /></PreviousPageButtonTemplate>
+        <LastPageButtonTemplate><Icon Name="IconName.Forward" /></LastPageButtonTemplate>
+        <FirstPageButtonTemplate><Icon Name="IconName.Backward" /></FirstPageButtonTemplate>
     </DataGrid>
 
     <Divider />
     
     <h2>Wynik</h2>
-    <PlotlyChart @bind-Config="config" @bind-Layout="plotLayout" @bind-Data="plotData" @ref="chart"/>
+    <PlotlyChart style="height: 60vh; min-height: 350px" @bind-Config="config" @bind-Layout="plotLayout" @bind-Data="plotData" @ref="chart"/>
+    <h4 style="padding-bottom: 3vh">Otoczką wypukłą jest @PrintFigureName(convexHullPoints.Count).</h4>
 
     <h2>Punkty otoczki wypukłej</h2>
     <DataGrid TItem="Point"
         Data="@convexHullPoints"
         TotalItems="@convexHullPoints.Count"
         ShowPager
+        PagerPosition="DataGridPagerPosition.Bottom"
+        PagerOptions="new(){ ButtonSize=Size.Small }"
         Responsive>
         <DataGridColumns>
             <DataGridColumn Field="@nameof(Point.X)" Caption="X" />
             <DataGridColumn Field="@nameof(Point.Y)" Caption="Y" />
         </DataGridColumns>
+        <NextPageButtonTemplate><Icon Name="IconName.StepForward" /></NextPageButtonTemplate>
+        <PreviousPageButtonTemplate><Icon Name="IconName.StepBackward" /></PreviousPageButtonTemplate>
+        <LastPageButtonTemplate><Icon Name="IconName.Forward" /></LastPageButtonTemplate>
+        <FirstPageButtonTemplate><Icon Name="IconName.Backward" /></FirstPageButtonTemplate>
     </DataGrid>
 }
 
@@ -72,8 +93,9 @@
         };
     Plotly.Blazor.Layout plotLayout = new()
         {
+            ClickMode = Plotly.Blazor.LayoutLib.ClickModeFlag.Event,
             AutoSize = true,
-            Height = 600,
+            ShowLegend = false,
         };
     IList<ITrace> plotData;
 
@@ -134,5 +156,20 @@
                 }
             };
         }
+    }
+
+    private string PrintFigureName(int p)
+    {
+        return p switch
+        {
+            0 => "-",
+            1 => "Punkt",
+            2 => "Linia",
+            3 => "Trójkąt",
+            4 => "Czworokąt",
+            5 => "Pięciokąt",
+            6 => $"Sześciokąt",
+            _ => $"{p}-kąt"
+        };
     }
 }

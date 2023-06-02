@@ -23,50 +23,41 @@ public class Point
 public class ConvexHullAlgorithm
 {
 
-    // Function to find orientation of three points (p, q, r)
-    private static int Orientation(Point p, Point q, Point r)
+    private static double Orientation(Point O, Point A, Point B)
     {
-        double val = (q.Y - p.Y) * (r.X - q.X) - (q.X - p.X) * (r.Y - q.Y);
-
-        if (Math.Abs(val) < double.Epsilon)
-            return 0; // Collinear
-        else if (val > 0)
-            return 1; // Clockwise
-        else
-            return 2; // Counterclockwise
+        return (A.X - O.X) * (B.Y - O.Y) - (A.Y - O.Y) * (B.X - O.X);
     }
 
-    public static List<Point> CalculateConvexHull(List<Point> givenPoints)
+    public static List<Point> CalculateConvexHull(List<Point> points)
     {
-        var points = new List<Point>(givenPoints);
+        if (points == null)
+            return null;
 
-        int n = points.Count;
-        if (n < 3)
+        if (points.Count() <= 1)
             return points;
 
-        List<Point> hull = new List<Point>();
+        int n = points.Count(), k = 0;
+        List<Point> H = new List<Point>(new Point[2 * n]);
 
-        int leftmost = 0;
-        for (int i = 1; i < n; i++)
+        points.Sort((a, b) =>
+             a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
+
+        // Build lower hull
+        for (int i = 0; i < n; ++i)
         {
-            if (points[i].X < points[leftmost].X)
-                leftmost = i;
+            while (k >= 2 && Orientation(H[k - 2], H[k - 1], points[i]) <= 0)
+                k--;
+            H[k++] = points[i];
         }
 
-        int p = leftmost, q;
-        do
+        // Build upper hull
+        for (int i = n - 2, t = k + 1; i >= 0; i--)
         {
-            hull.Add(points[p]);
-            q = (p + 1) % n;
-            for (int i = 0; i < n; i++)
-            {
-                if (Orientation(points[p], points[i], points[q]) == 2)
-                    q = i;
-            }
-            p = q;
+            while (k >= t && Orientation(H[k - 2], H[k - 1], points[i]) <= 0)
+                k--;
+            H[k++] = points[i];
+        }
 
-        } while (p != leftmost);
-
-        return hull;
+        return H.Take(k - 1).ToList();
     }
 }
