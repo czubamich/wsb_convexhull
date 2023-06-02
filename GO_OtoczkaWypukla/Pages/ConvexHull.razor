@@ -1,0 +1,138 @@
+﻿@page "/convexhull"
+@using GO_OtoczkaWypukla.Algorithms
+@using System.Linq
+@using Blazorise.DataGrid
+@using Plotly.Blazor
+@using Plotly.Blazor.Traces
+@using Plotly.Blazor.Traces.ScatterLib;
+@inject ConvexHullAlgorithm ConvexHullAlgorithm
+
+<PageTitle>Otoczka Wypukła</PageTitle>
+
+<h1>Otoczka Wypukła</h1>
+
+@{
+    <h3>Zadane punkty</h3>
+    <DataGrid TItem="Point"
+          RowUpdated="@calculateConvexHull"
+          RowRemoved="@calculateConvexHull"
+          RowInserted="@calculateConvexHull"
+          Data="@givenPoints"
+          EditMode="DataGridEditMode.Inline"
+          Editable
+          ShowPager
+          Responsive>
+        <DataGridCommandColumn Width="15%">
+            <NewCommandTemplate>
+                <Button Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
+            </NewCommandTemplate>
+            <EditCommandTemplate>
+                <Button Color="Color.Primary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+            </EditCommandTemplate>
+            <DeleteCommandTemplate>
+                <Button Color="Color.Danger" Clicked="@context.Clicked">@context.LocalizationString</Button>
+            </DeleteCommandTemplate>
+            <SaveCommandTemplate>
+                <Button Color="Color.Success" Clicked="@context.Clicked">@context.LocalizationString</Button>
+            </SaveCommandTemplate>
+            <CancelCommandTemplate>
+                <Button Color="Color.Secondary" Clicked="@context.Clicked">@context.LocalizationString</Button>
+            </CancelCommandTemplate>
+        </DataGridCommandColumn>
+        <DataGridColumn Field="@nameof(Point.X)" Caption="X" Editable />
+        <DataGridColumn Field="@nameof(Point.Y)" Caption="Y" Editable />
+    </DataGrid>
+
+    <Divider />
+    
+    <h2>Wynik</h2>
+    <PlotlyChart @bind-Config="config" @bind-Layout="plotLayout" @bind-Data="plotData" @ref="chart"/>
+
+    <h2>Punkty otoczki wypukłej</h2>
+    <DataGrid TItem="Point"
+        Data="@convexHullPoints"
+        TotalItems="@convexHullPoints.Count"
+        ShowPager
+        Responsive>
+        <DataGridColumns>
+            <DataGridColumn Field="@nameof(Point.X)" Caption="X" />
+            <DataGridColumn Field="@nameof(Point.Y)" Caption="Y" />
+        </DataGridColumns>
+    </DataGrid>
+}
+
+@code {
+    List<Point> givenPoints = new();
+    List<Point> convexHullPoints = new();
+    PlotlyChart chart;
+    Plotly.Blazor.Config config = new()
+        {
+            AutoSizable = true,
+            Responsive = true,
+        };
+    Plotly.Blazor.Layout plotLayout = new()
+        {
+            AutoSize = true,
+            Height = 600,
+        };
+    IList<ITrace> plotData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        givenPoints = new List<Point>() { new(), new(), new(), new() };
+        convexHullPoints = ConvexHullAlgorithm.CalculateConvexHull(givenPoints);
+        plotData = regenPlotData();
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task calculateConvexHull()
+    {
+        convexHullPoints = ConvexHullAlgorithm.CalculateConvexHull(givenPoints);
+
+        chart.Data = regenPlotData();
+        await chart.Update();
+    }
+
+    public IList<ITrace> regenPlotData()
+    {
+        if (givenPoints.Count == 0)
+        {
+            return new List<ITrace>()
+            {
+                new Scatter
+                {
+                    Name = "GivenPoints",
+                    Mode = ModeFlag.Markers,
+                    X = givenPoints.Select(f => (object)f.X).ToList<object>(),
+                    Y = givenPoints.Select(f => (object)f.Y).ToList<object>()
+                }
+            };
+        }
+        else
+        {
+            return new List<ITrace>()
+            {
+                new Scatter
+                {
+                    Name = "GivenPoints",
+                    Mode = ModeFlag.Markers,
+                    X = givenPoints.Select(f => (object)f.X).ToList<object>(),
+                    Y = givenPoints.Select(f => (object)f.Y).ToList<object>()
+                },
+                new Scatter
+                {
+                    Name = "ConvexHull",
+                    Mode = ModeFlag.Lines,
+                    X = convexHullPoints.Select(f => (object)f.X).Append(convexHullPoints.First().X).ToList() ?? new List<object>(),
+                    Y = convexHullPoints.Select(f => (object)f.Y).Append(convexHullPoints.First().Y).ToList() ?? new List<object>()
+                }
+            };
+        }
+    }
+}
