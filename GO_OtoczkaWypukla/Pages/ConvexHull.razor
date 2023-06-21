@@ -61,9 +61,12 @@
     
     <h2>Wynik</h2>
     <PlotlyChart style="height: 60vh; min-height: 350px" @bind-Config="config" @bind-Layout="plotLayout" @bind-Data="plotData" @ref="chart"/>
-    <h4 style="padding-bottom: 3vh">Otoczką wypukłą jest @PrintFigureName(convexHullPoints.Count).</h4>
+    @if(convexHullPoints.Count>0)
+    {
+        <h4 style="padding-bottom: 3vh">Otoczką wypukłą jest @PrintFigureName(convexHullPoints.Count).</h4>
+    }
 
-    <h2>Punkty otoczki wypukłej</h2>
+    <h2>Współrzędne</h2>
     <DataGrid TItem="Point"
         Data="@convexHullPoints"
         TotalItems="@convexHullPoints.Count"
@@ -108,11 +111,9 @@
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
+    /// <summary>
+    /// Przeliczenie punktów otoczki wypukłej
+    /// </summary>
     private async Task calculateConvexHull()
     {
         convexHullPoints = ConvexHullAlgorithm.CalculateConvexHull(givenPoints);
@@ -121,6 +122,9 @@
         await chart.Update();
     }
 
+    /// <summary>
+    /// Przegenerowanie punktów na wykresie
+    /// </summary>
     public IList<ITrace> regenPlotData()
     {
         if (givenPoints.Count == 0)
