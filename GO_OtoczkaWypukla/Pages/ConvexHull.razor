@@ -133,7 +133,7 @@
             {
                 new Scatter
                 {
-                    Name = "GivenPoints",
+                    Name = "Punkt",
                     Mode = ModeFlag.Markers,
                     X = givenPoints.Select(f => (object)f.X).ToList<object>(),
                     Y = givenPoints.Select(f => (object)f.Y).ToList<object>()
@@ -146,14 +146,14 @@
             {
                 new Scatter
                 {
-                    Name = "GivenPoints",
+                    Name = "Punkt",
                     Mode = ModeFlag.Markers,
                     X = givenPoints.Select(f => (object)f.X).ToList<object>(),
                     Y = givenPoints.Select(f => (object)f.Y).ToList<object>()
                 },
                 new Scatter
                 {
-                    Name = "ConvexHull",
+                    Name = "Punkt Otoczki Wypukłej",
                     Mode = ModeFlag.Lines,
                     X = convexHullPoints.Select(f => (object)f.X).Append(convexHullPoints.First().X).ToList() ?? new List<object>(),
                     Y = convexHullPoints.Select(f => (object)f.Y).Append(convexHullPoints.First().Y).ToList() ?? new List<object>()

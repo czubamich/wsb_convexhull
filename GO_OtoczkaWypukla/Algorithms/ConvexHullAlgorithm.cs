@@ -1,3 +1,4 @@
+using Blazorise;
 using System.Collections.Generic;
 
 namespace GO_OtoczkaWypukla.Algorithms;
@@ -15,14 +16,17 @@ public class Point
 
     public Point()
     {
-        X = Random.Shared.Next(-20, 20); ;
-        Y = Random.Shared.Next(-20, 20); ;
+        var r = Random.Shared.Next(0,100);
+        var theta = Random.Shared.NextDouble() * 2 * Math.PI;
+        
+        X = (int)Math.Floor(0 + r * Math.Cos(theta));
+        Y = (int)Math.Floor(0 + r * Math.Sin(theta));
     }
 }
 
 public class ConvexHullAlgorithm
 {
-
+    //Wyznaczenie orientacji 3 punktów wzglêdem siebie
     private static int Orientation(Point O, Point A, Point B)
     {
         return (A.X - O.X) * (B.Y - O.Y) - (A.Y - O.Y) * (B.X - O.X);
@@ -34,19 +38,19 @@ public class ConvexHullAlgorithm
         if (points == null)
             return null;
 
-        // Je¿eli jest mniej ni¿ 2 punkty zwróc zbiór wejœciowy
-        if (points.Count() <= 1)
+        // Je¿eli jest mniej ni¿ 3 punkty zwróc zbiór wejœciowy
+        if (points.Count() < 3)
             return points;
 
-        //zmiennych
+        //Deklaracja zmiennych
         int n = points.Count(), k = 0;
         List<Point> H = new List<Point>(new Point[2 * n]);
 
-        //Posortowanie punktów wedg³óg wspó³rzêdnych X (a je¿eli s¹ równe to wed³ug Y)
+        //Posortowanie punktów wed³ug wspó³rzêdnych X (a je¿eli s¹ równe to wed³ug Y)
         points.Sort((a, b) =>
              a.X == b.X ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
 
-        // Wyznaczenie dolnej czêœci otoczki
+        // Wyznaczenie górnej czêœci otoczki
         for (int i = 0; i < n; ++i)
         {
             while (k >= 2 && Orientation(H[k - 2], H[k - 1], points[i]) <= 0)
@@ -54,7 +58,7 @@ public class ConvexHullAlgorithm
             H[k++] = points[i];
         }
 
-        // Wyznaczenie górnej czêœci otoczki
+        // Wyznaczenie dolnej czêœci otoczki
         for (int i = n - 2, t = k + 1; i >= 0; i--)
         {
             while (k >= t && Orientation(H[k - 2], H[k - 1], points[i]) <= 0)
